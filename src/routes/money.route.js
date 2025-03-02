@@ -3,9 +3,9 @@ import prisma from "../prisma/prismaClient.js";
 
 const moneyRouter = express.Router();
 
-//POST
+// POST
 moneyRouter.post('/money', async (req, res) => {
-    const { description, date, amount, type } = req.body; 
+    const { description, date, amount } = req.body;
 
     try {
         const newMoney = await prisma.money.create({
@@ -13,38 +13,37 @@ moneyRouter.post('/money', async (req, res) => {
                 description,
                 date: new Date(date),
                 amount,
-                type: type || "expense"
+                type: amount < 0 ? "expense" : "income"
             }
         });
         res.json(newMoney);
     } catch (error) {
         console.error("Errore:", error);
-        res.status(500).json({ message: 'Errore nella creazione del record!'});
+        res.status(500).json({ message: 'Errore nella creazione del record!' });
     }
 });
 
-
-//GET
-moneyRouter.get('/money/:id', async (req,res) => {
+// GET by ID
+moneyRouter.get('/money/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const transaction = await prisma.money.findUnique({
             where: { id: +id }
-        })
+        });
         if (!transaction) {
-            return res.status(404).json({message: 'not found!'});
+            return res.status(404).json({ message: 'Not found!' });
         }
         res.json(transaction);
     } catch (error) {
-        res.status(500).json({message: 'impossibile caricare la lista!'});
+        res.status(500).json({ message: 'Impossibile caricare la transazione!' });
     }
-})
+});
 
-//GET: Filtrare per Mese/Anno (default: Mese/Anno corrente)
+// GET: Filtrare per Mese/Anno
 moneyRouter.get('/money', async (req, res) => {
     const { month, year, type } = req.query;
 
-    const currentMonth = month ? parseInt(month) : new Date().getMonth() + 1; 
+    const currentMonth = month ? parseInt(month) : new Date().getMonth() + 1;
     const currentYear = year ? parseInt(year) : new Date().getFullYear();
 
     try {
@@ -52,7 +51,7 @@ moneyRouter.get('/money', async (req, res) => {
             where: {
                 date: {
                     gte: new Date(currentYear, currentMonth - 1, 1),
-                    lt: new Date(currentYear, currentMonth, 1), 
+                    lt: new Date(currentYear, currentMonth, 1),
                 },
                 type: type || undefined
             },
@@ -64,33 +63,33 @@ moneyRouter.get('/money', async (req, res) => {
         res.json(transactions);
     } catch (error) {
         console.error("Errore:", error);
-        res.status(500).json({ message: 'Impossibile caricare le transazioni!'});
+        res.status(500).json({ message: 'Impossibile caricare le transazioni!' });
     }
 });
 
-
-//UPDATE
+// UPDATE
 moneyRouter.put('/money/:id', async (req, res) => {
     const { id } = req.params;
-    
+    const { description, date, amount } = req.body;
+
     try {
         const updatedMoney = await prisma.money.update({
-            where: { id: Number(id) }, 
-            data: { 
-                description: req.body.description,
-                date: req.body.date ? new Date(req.body.date) : undefined,
-                amount: req.body.amount,
-                type: req.body.type
+            where: { id: Number(id) },
+            data: {
+                description,
+                date: date ? new Date(date) : undefined,
+                amount,
+                type: amount < 0 ? "expense" : "income"
             },
         });
         res.json(updatedMoney);
     } catch (error) {
-        console.error('Errore durante l\'aggiornamento:', error);
-        res.status(500).json({ message: 'Impossibile aggiornare il record!'});
+        console.error("Errore durante l'aggiornamento:", error);
+        res.status(500).json({ message: 'Impossibile aggiornare il record!' });
     }
 });
-    
-//DELETE
+
+// DELETE
 moneyRouter.delete('/money/:id', async (req, res) => {
     const { id } = req.params;
 
@@ -101,9 +100,8 @@ moneyRouter.delete('/money/:id', async (req, res) => {
         res.json({ message: 'Record eliminato con successo!', data: deletedMoney });
     } catch (error) {
         console.error("Errore:", error);
-        res.status(500).json({ message: 'Impossibile eliminare il record!'});
+        res.status(500).json({ message: 'Impossibile eliminare il record!' });
     }
 });
 
 export default moneyRouter;
-
