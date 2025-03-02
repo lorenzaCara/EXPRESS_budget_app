@@ -14,8 +14,9 @@ datasource db {
 }
 
 model Money {
-  id Int @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   description String
-  date DateTime 
-  amount Float
+  date        DateTime
+  amount      Float
+  type        String   @default("expense") // Può essere "income" o "expense"
 }

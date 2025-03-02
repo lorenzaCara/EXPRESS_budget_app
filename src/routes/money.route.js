@@ -5,14 +5,15 @@ const moneyRouter = express.Router();
 
 //POST
 moneyRouter.post('/money', async (req, res) => {
-    const { description, date, amount } = req.body; 
+    const { description, date, amount, type } = req.body; 
 
     try {
         const newMoney = await prisma.money.create({
             data: {
                 description,
                 date: new Date(date),
-                amount
+                amount,
+                type: type || "expense"
             }
         });
         res.json(newMoney);
@@ -21,6 +22,7 @@ moneyRouter.post('/money', async (req, res) => {
         res.status(500).json({ message: 'Errore nella creazione del record!'});
     }
 });
+
 
 //GET
 moneyRouter.get('/money/:id', async (req,res) => {
@@ -40,7 +42,7 @@ moneyRouter.get('/money/:id', async (req,res) => {
 
 //GET: Filtrare per Mese/Anno (default: Mese/Anno corrente)
 moneyRouter.get('/money', async (req, res) => {
-    const { month, year } = req.query;
+    const { month, year, type } = req.query;
 
     const currentMonth = month ? parseInt(month) : new Date().getMonth() + 1; 
     const currentYear = year ? parseInt(year) : new Date().getFullYear();
@@ -51,7 +53,8 @@ moneyRouter.get('/money', async (req, res) => {
                 date: {
                     gte: new Date(currentYear, currentMonth - 1, 1),
                     lt: new Date(currentYear, currentMonth, 1), 
-                }
+                },
+                type: type || undefined
             },
             orderBy: {
                 date: 'asc'
@@ -65,6 +68,7 @@ moneyRouter.get('/money', async (req, res) => {
     }
 });
 
+
 //UPDATE
 moneyRouter.put('/money/:id', async (req, res) => {
     const { id } = req.params;
@@ -76,6 +80,7 @@ moneyRouter.put('/money/:id', async (req, res) => {
                 description: req.body.description,
                 date: req.body.date ? new Date(req.body.date) : undefined,
                 amount: req.body.amount,
+                type: req.body.type
             },
         });
         res.json(updatedMoney);
