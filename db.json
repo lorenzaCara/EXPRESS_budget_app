@@ -1,0 +1,16 @@
+{
+  "lists": [
+    {
+      "id": 1,
+      "description": "Cena fuori",
+      "date": "2025-02-24 20:00:00",
+      "amount": 45.5
+    },
+    {
+      "id": 2,
+      "description": "Cena fuori",
+      "date": "2025-02-24 20:00:00",
+      "amount": 45.5
+    }
+  ]
+}
